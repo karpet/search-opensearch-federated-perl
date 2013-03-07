@@ -1,47 +1,56 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Test::More tests => 7;
+use Test::More tests => 8;
 use Data::Dump qw( dump );
 use lib 'lib';
 
 use_ok('Search::OpenSearch::Federated');
 
-my $type = $ENV{SOS_TYPE} || 'XML';
+SKIP: {
 
-ok( my $ms = Search::OpenSearch::Federated->new(
-        urls => [
-            "http://localhost:5000/search?f=0&q=test&t=$type",
-            "http://localhost:5000/search?f=0&q=turkey&t=$type",
-        ],
-        timeout => 5,
-    ),
-    "new Federated object"
-);
+    if ( !$ENV{SOS_TEST} ) {
+        diag "set SOS_TEST env var to test Federated results";
+        skip "set SOS_TEST env var to test Federated results", 7;
+    }
 
-ok( my $resp = $ms->search(), "search()" );
+    my $type = $ENV{SOS_TYPE} || 'XML';
 
-#dump($resp);
+    ok( my $ms = Search::OpenSearch::Federated->new(
+            urls => [
+                "http://localhost:5000/search?f=0&q=test&t=$type",
+                "http://localhost:5000/search?f=0&q=turkey&t=$type",
+            ],
+            timeout => 5,
+        ),
+        "new Federated object"
+    );
 
-is( ref($resp), 'ARRAY', "response is an ARRAY ref" );
+    ok( my $resp = $ms->search(), "search()" );
 
-ok( scalar(@$resp) > 1, "more than one result" );
+    #dump($resp);
 
-ok( $resp->[0]->{score}, "first result has a score" );
+    is( ref($resp), 'ARRAY', "response is an ARRAY ref" );
 
-my $prev_score;
-my $failed_sort = 0;
+    ok( scalar(@$resp) > 1, "more than one result" );
+
+    ok( $resp->[0]->{score}, "first result has a score" );
+
+    my $prev_score;
+    my $failed_sort = 0;
 R: for my $r (@$resp) {
-    if ( !defined $prev_score ) {
+        if ( !defined $prev_score ) {
+            $prev_score = $r->{score};
+        }
+        if ( $r->{score} > $prev_score ) {
+            $failed_sort = 1;
+            last R;
+        }
         $prev_score = $r->{score};
     }
-    if ( $r->{score} > $prev_score ) {
-        $failed_sort = 1;
-        last R;
-    }
-    $prev_score = $r->{score};
+
+    ok( !$failed_sort, "results sorted by score" );
+
+    ok( $ms->total(), "get total" );
+
 }
-
-ok( !$failed_sort, "results sorted by score" );
-
-ok( $ms->total(), "get total" );

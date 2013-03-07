@@ -196,6 +196,14 @@ an array reference.
 
 Execute the search. Returns array ref of results sorted by score.
 
+=head2 fields
+
+Returns fields set in new().
+
+=head2 total
+
+Return total hits.
+
 =head1 COPYRIGHT
 
 Copyright 2013 - American Public Media Group
