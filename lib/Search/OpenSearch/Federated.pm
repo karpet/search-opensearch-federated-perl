@@ -70,8 +70,10 @@ RESP: for my $resp (@$responses) {
         #warn sprintf( "response for %s\n", $resp->request->uri );
         if ( $resp->content_type eq 'application/json' ) {
             my $r = decode_json( $resp->content );
-            push @$results, @{ $r->{results} };
-            $total += $r->{total};
+            if ( $r->{results} ) {
+                push @$results, @{ $r->{results} };
+            }
+            $total += $r->{total} || 0;
         }
         if ( $resp->content_type eq 'application/xml' ) {
             my $xml = $resp->content;
@@ -158,7 +160,6 @@ sub _fetch {
     #warn "got response for $url: " . $response->status_line;
     return $response;
 }
-
 
 1;
 
