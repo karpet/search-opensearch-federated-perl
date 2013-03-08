@@ -28,7 +28,7 @@ SKIP: {
 
     ok( my $resp = $ms->search(), "search()" );
 
-    dump($resp);
+    #dump($resp);
 
     is( ref($resp), 'ARRAY', "response is an ARRAY ref" );
 
