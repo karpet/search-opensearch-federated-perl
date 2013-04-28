@@ -6,3 +6,6 @@ Revision history for Search-OpenSearch-Federated
 0.002   18 March 2013
     * better error checking when a URL returns zero results
     * add missing dependences to Makefile.PL
+
+0.003   xxx
+    * fix pod SYNOPSIS for old class name
