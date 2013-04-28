@@ -171,7 +171,7 @@ Search::OpenSearch::Federated - aggregate OpenSearch results
 
 =head1 SYNOPSIS
 
- my $ms = APM::FedSearch::MultiSearch->new(
+ my $ms = Search::OpenSearch::Federated->new(
     urls    => [
         'http://someplace.org/search?q=foo',
         'http://someother.org/search?q=foo',
