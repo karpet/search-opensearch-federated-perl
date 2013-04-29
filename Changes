@@ -9,3 +9,5 @@ Revision history for Search-OpenSearch-Federated
 
 0.003   xxx
     * fix pod SYNOPSIS for old class name
+    * make SOF a subclass of Search::Tools::Object and define real accessor methods
+
