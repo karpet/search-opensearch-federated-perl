@@ -174,8 +174,8 @@ Search::OpenSearch::Federated - aggregate OpenSearch results
 
  my $ms = Search::OpenSearch::Federated->new(
     urls    => [
-        'http://someplace.org/search?q=foo',
-        'http://someother.org/search?q=foo',
+        'http://some-site.org/search?q=foo',
+        'http://some-other-site.org/search?q=foo',
     ],
     timeout => 10,  # very generous
  );
@@ -186,6 +186,12 @@ Search::OpenSearch::Federated - aggregate OpenSearch results
      printf("uri=%s",   $r->uri);
      print "\n";
  }
+
+=head1 DESCRIPTION
+
+Search::OpenSearch::Federated is for aggregating multiple OpenSearch responses
+into a single result set. Use it as a client for Search::OpenSearch::Engine-powered
+servers or for any server that provides OpenSearch-style results.
 
 =head1 METHODS
 
@@ -270,6 +276,8 @@ L<http://search.cpan.org/dist/Search-OpenSearch-Federated/>
 
 =head1 ACKNOWLEDGEMENTS
 
+Thanks to American Public Media and the state of Minnesota for sponsoring the 
+development of this module.
 
 =head1 LICENSE
 
