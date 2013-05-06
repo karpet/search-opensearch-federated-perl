@@ -62,9 +62,12 @@ sub _aggregate {
 
 RESP: for my $resp (@$responses) {
 
-        my $req_uri = $resp->request->uri;
+        my $req_uri     = $resp->request->uri;
+        my $resp_status = $resp->code;
         $self->debug
-            and warn sprintf( "response for %s\n", $req_uri );
+            and warn
+            sprintf( "response for %s = %s\n", $req_uri, $resp_status );
+        next RESP unless $resp_status =~ m/^2/;
         if ( $resp->content_type eq 'application/json' ) {
             my $r = decode_json( $resp->content );
             if ( $r->{results} ) {
@@ -153,7 +156,7 @@ sub _fetch {
     my $self = shift;
     my $url  = shift or croak "url required";
     my $ua   = LWP::UserAgent->new();
-    $ua->agent('apm-fedsearch');
+    $ua->agent( 'sos-fedsearch ' . $VERSION );
     $ua->timeout( $self->{timeout} ) if $self->{timeout};
 
     my $response = $ua->get($url);
