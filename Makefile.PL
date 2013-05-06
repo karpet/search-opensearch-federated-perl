@@ -17,6 +17,7 @@ requires 'Parallel::Iterator' => 0;
 requires 'LWP::UserAgent'     => 0;
 requires 'XML::Simple'        => 0;
 requires 'XML::Feed'          => 0;
+requires 'Normalize'          => 0;
 
 license 'http://dev.perl.org/licenses/';
 homepage 'https://github.com/karpet/search-opensearch-federated-perl';

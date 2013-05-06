@@ -3,10 +3,10 @@ package Search::OpenSearch::Federated;
 use strict;
 use warnings;
 
-our $VERSION = '0.003';
+our $VERSION = '0.004';
 
 use base 'Search::Tools::Object';
-__PACKAGE__->mk_accessors(qw( fields urls total timeout ));
+__PACKAGE__->mk_accessors(qw( fields urls total timeout normalize_scores ));
 
 use Carp;
 use Data::Dump qw( dump );
@@ -16,6 +16,7 @@ use LWP::UserAgent;
 use Scalar::Util qw( blessed );
 use Search::Tools::XML;
 use Data::Transformer;
+use Normalize;
 
 # we do not use WWW::OpenSearch because we need to pull out
 # some non-standard data from the XML.
@@ -68,10 +69,15 @@ RESP: for my $resp (@$responses) {
             and warn
             sprintf( "response for %s = %s\n", $req_uri, $resp_status );
         next RESP unless $resp_status =~ m/^2/;
+
+        # temporary buffer to allow for normalizing scores
+        my @resp_results  = ();
+        my $highest_score = 0;
+
         if ( $resp->content_type eq 'application/json' ) {
             my $r = decode_json( $resp->content );
             if ( $r->{results} ) {
-                push @$results, @{ $r->{results} };
+                @resp_results = @{ $r->{results} };
             }
             $total += $r->{total} || 0;
         }
@@ -141,12 +147,34 @@ RESP: for my $resp (@$responses) {
             my $atom = $feed->{atom};
             $total += $atom->get( $OS_NS, 'totalResults' );
 
-            push @$results, @entries;
+            push @resp_results, @entries;
         }
         else {
             croak sprintf( "Unsupported response type '%s' for %s\n",
                 scalar $resp->content_type, $req_uri );
         }
+
+        # normalize scores
+        if ( $self->normalize_scores ) {
+            my $normalizer = Normalize->new( 'round_to' => 0.001 );
+            my %normalized = ();
+            my $i          = 0;
+
+            # compute
+            for my $r (@resp_results) {
+                $normalized{ $i++ } = $r->{score};
+            }
+            $normalizer->normalize_to_max( \%normalized );
+
+            # apply
+            for my $idx ( keys %normalized ) {
+                $resp_results[$idx]->{score} = ( $normalized{$idx} * 1000 );
+            }
+        }
+
+        # aggregate
+        push @$results, @resp_results;
+
     }
     $self->{total} = $total;
     return [ sort { $b->{score} <=> $a->{score} } @$results ];
@@ -214,6 +242,11 @@ an array reference. Supported I<args> keys are:
 =item fields I<arrayref>
 
 =item debug 0|1
+
+=item normalize_scores 0|1
+
+If true, all result scores are run through the L<Normalize> module to (hopefully)
+help create parity amongst the result sets.
 
 =back
 

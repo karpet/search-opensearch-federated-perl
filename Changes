@@ -11,3 +11,6 @@ Revision history for Search-OpenSearch-Federated
     * fix pod SYNOPSIS for old class name
     * make SOF a subclass of Search::Tools::Object and define real accessor methods
 
+0.004   6 May 2013
+    * add debugging help
+    * add normalize_scores() feature
