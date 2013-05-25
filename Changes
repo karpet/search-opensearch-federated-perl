@@ -17,4 +17,5 @@ Revision history for Search-OpenSearch-Federated
 
 0.005   xxx
     * add subtotals()
+    * add facets()
 

@@ -7,7 +7,7 @@ our $VERSION = '0.005';
 
 use base 'Search::Tools::Object';
 __PACKAGE__->mk_accessors(
-    qw( fields urls total subtotals timeout normalize_scores ));
+    qw( fields urls total facets subtotals timeout normalize_scores ));
 
 use Carp;
 use Data::Dump qw( dump );
@@ -61,6 +61,7 @@ sub _aggregate {
     my $fields    = $self->fields;
     my $total     = 0;
     my %subtotals = ();
+    my %facets    = ();
 
 RESP: for my $resp (@$responses) {
 
@@ -80,6 +81,16 @@ RESP: for my $resp (@$responses) {
             if ( $r->{results} ) {
                 @resp_results = @{ $r->{results} };
             }
+
+            # must turn facets inside out in order
+            # to aggregate counts correctly
+            if ( $r->{facets} ) {
+                for my $name ( keys %{ $r->{facets} } ) {
+                    for my $facet ( @{ $r->{facets}->{$name} } ) {
+                        $facets{$name}->{ $facet->{term} } += $facet->{count};
+                    }
+                }
+            }
             $total += $r->{total} || 0;
             $subtotals{$req_uri} = $r->{total};
         }
@@ -98,7 +109,7 @@ RESP: for my $resp (@$responses) {
 
             #
             # we must re-escape the XML content since the feed parser
-            # and XML::Simple will esacpe values automatically
+            # and XML::Simple will escape values automatically
             #
             my @entries;
             for my $item ( $feed->entries ) {
@@ -146,6 +157,22 @@ RESP: for my $resp (@$responses) {
 
             }
 
+            # facets require digging into the raw xml
+            my $xml_feed = XMLin( $feed->as_xml, NoAttr => 1 );
+
+            #dump($xml_feed);
+
+            # must turn facets inside out in order
+            # to aggregate counts correctly
+            if ( $xml_feed->{category}->{sos}->{facets} ) {
+                my $facet_feed = $xml_feed->{category}->{sos}->{facets};
+                for my $name ( keys %$facet_feed ) {
+                    for my $facet ( @{ $facet_feed->{$name}->{$name} } ) {
+                        $facets{$name}->{ $facet->{term} } += $facet->{count};
+                    }
+                }
+            }
+
             my $atom = $feed->{atom};
             my $this_total = $atom->get( $OS_NS, 'totalResults' );
             $total += $this_total;
@@ -179,6 +206,17 @@ RESP: for my $resp (@$responses) {
         push @$results, @resp_results;
 
     }
+
+    # transform facets back into arrays of count/term pairs
+    my %facets_norm;
+    for my $name ( keys %facets ) {
+        my @diads = ();
+        for my $term ( keys %{ $facets{$name} } ) {
+            push @diads, { term => $term, count => $facets{$name}->{$term} };
+        }
+        $facets_norm{$name} = [@diads];
+    }
+    $self->{facets}    = \%facets_norm;
     $self->{total}     = $total;
     $self->{subtotals} = \%subtotals;
     return [ sort { $b->{score} <=> $a->{score} } @$results ];
@@ -274,6 +312,10 @@ Return total hits.
 
 Returns hash ref of subtotal for each URL, keys being
 the values of urls().
+
+=head2 facets
+
+Returns hash ref of aggregated facets for all URLs.
 
 =head1 COPYRIGHT
 
