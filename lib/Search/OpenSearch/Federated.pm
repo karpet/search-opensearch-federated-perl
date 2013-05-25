@@ -3,10 +3,11 @@ package Search::OpenSearch::Federated;
 use strict;
 use warnings;
 
-our $VERSION = '0.004';
+our $VERSION = '0.005';
 
 use base 'Search::Tools::Object';
-__PACKAGE__->mk_accessors(qw( fields urls total timeout normalize_scores ));
+__PACKAGE__->mk_accessors(
+    qw( fields urls total subtotals timeout normalize_scores ));
 
 use Carp;
 use Data::Dump qw( dump );
@@ -51,7 +52,6 @@ sub search {
     );
 
     return $self->_aggregate( \@done );
-
 }
 
 sub _aggregate {
@@ -60,6 +60,7 @@ sub _aggregate {
     my $results   = [];
     my $fields    = $self->fields;
     my $total     = 0;
+    my %subtotals = ();
 
 RESP: for my $resp (@$responses) {
 
@@ -80,6 +81,7 @@ RESP: for my $resp (@$responses) {
                 @resp_results = @{ $r->{results} };
             }
             $total += $r->{total} || 0;
+            $subtotals{$req_uri} = $r->{total};
         }
         elsif ( $resp->content_type eq 'application/xml' ) {
             my $xml = $resp->content;
@@ -145,8 +147,9 @@ RESP: for my $resp (@$responses) {
             }
 
             my $atom = $feed->{atom};
-            $total += $atom->get( $OS_NS, 'totalResults' );
-
+            my $this_total = $atom->get( $OS_NS, 'totalResults' );
+            $total += $this_total;
+            $subtotals{$req_uri} = $this_total;
             push @resp_results, @entries;
         }
         else {
@@ -176,7 +179,8 @@ RESP: for my $resp (@$responses) {
         push @$results, @resp_results;
 
     }
-    $self->{total} = $total;
+    $self->{total}     = $total;
+    $self->{subtotals} = \%subtotals;
     return [ sort { $b->{score} <=> $a->{score} } @$results ];
 }
 
@@ -265,6 +269,11 @@ Returns fields set in new().
 =head2 total
 
 Return total hits.
+
+=head2 subtotals
+
+Returns hash ref of subtotal for each URL, keys being
+the values of urls().
 
 =head1 COPYRIGHT
 

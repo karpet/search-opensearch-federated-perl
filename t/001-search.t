@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Test::More tests => 8;
+use Test::More tests => 9;
 use Data::Dump qw( dump );
 use lib 'lib';
 
@@ -11,7 +11,7 @@ SKIP: {
 
     if ( !$ENV{SOS_TEST} ) {
         diag "set SOS_TEST env var to test Federated results";
-        skip "set SOS_TEST env var to test Federated results", 7;
+        skip "set SOS_TEST env var to test Federated results", 8;
     }
 
     my $type = $ENV{SOS_TYPE} || 'XML';
@@ -21,7 +21,7 @@ SKIP: {
                 "http://localhost:5000/search?f=0&q=test&t=$type",
                 "http://localhost:5000/search?f=0&q=turkey&t=$type",
             ],
-            timeout => 5,
+            timeout => 2,
         ),
         "new Federated object"
     );
@@ -52,5 +52,9 @@ R: for my $r (@$resp) {
     ok( !$failed_sort, "results sorted by score" );
 
     ok( $ms->total(), "get total" );
+
+    is( ref( $ms->subtotals ), 'HASH', "subtotals is a hash ref" );
+
+    #diag( dump $ms->subtotals );
 
 }
