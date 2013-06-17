@@ -35,7 +35,8 @@ my $XML_ESCAPER = Data::Transformer->new(
 sub init {
     my $self = shift;
     $self->SUPER::init(@_);
-    $self->{fields} ||= [qw( title id author link summary tags modified )];
+    $self->{fields}  ||= [qw( title id author link summary tags modified )];
+    $self->{version} ||= $VERSION;
     return $self;
 }
 
