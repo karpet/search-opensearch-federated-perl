@@ -18,13 +18,16 @@ SKIP: {
 
     ok( my $ms = Search::OpenSearch::Federated->new(
             urls => [
-                "http://localhost:5000/search?f=1&q=test&t=$type",
-                "http://localhost:5000/search?f=1&q=turkey&t=$type",
+                "$ENV{SOS_TEST}/search?f=1&q=test&t=$type",
+                "$ENV{SOS_TEST}/search?f=1&q=turkey&t=$type",
             ],
             timeout => 2,
+            debug   => 1,
         ),
         "new Federated object"
     );
+
+    #diag( dump($ms) );
 
     ok( my $resp = $ms->search(), "search()" );
 
