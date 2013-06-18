@@ -15,7 +15,7 @@ Revision history for Search-OpenSearch-Federated
     * add debugging help
     * add normalize_scores() feature
 
-0.005   xxx
+0.005   18 June 2013
     * add subtotals()
     * add facets()
 
