@@ -1,5 +1,8 @@
 Revision history for Search-OpenSearch-Federated
 
+0.006 11 May 2014
+ - switch to Moo in support of Search::Tools 1.000
+
 0.005 18 June 2013
  - add subtotals()
  - add facets()

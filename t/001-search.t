@@ -18,8 +18,8 @@ SKIP: {
 
     ok( my $ms = Search::OpenSearch::Federated->new(
             urls => [
-                "$ENV{SOS_TEST}/search?f=1&q=test&t=$type",
-                "$ENV{SOS_TEST}/search?f=1&q=turkey&t=$type",
+                "$ENV{SOS_TEST}/search?f=1&q=dezi&t=$type",
+                "$ENV{SOS_TEST}/search?f=1&q=release&t=$type",
             ],
             timeout => 2,
             debug   => 1,
@@ -31,7 +31,7 @@ SKIP: {
 
     ok( my $resp = $ms->search(), "search()" );
 
-    #dump($resp);
+    #diag dump($resp);
 
     is( ref($resp), 'ARRAY', "response is an ARRAY ref" );
 

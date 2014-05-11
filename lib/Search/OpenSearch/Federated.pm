@@ -1,13 +1,16 @@
 package Search::OpenSearch::Federated;
+use Moo;
 
-use strict;
-use warnings;
+our $VERSION = '0.006';
 
-our $VERSION = '0.005';
-
-use base 'Search::Tools::Object';
-__PACKAGE__->mk_accessors(
-    qw( fields urls total facets subtotals timeout normalize_scores ));
+has 'debug'            => ( is => 'rw' );
+has 'fields'           => ( is => 'rw' );
+has 'urls'             => ( is => 'rw' );
+has 'total'            => ( is => 'rw' );
+has 'facets'           => ( is => 'rw' );
+has 'subtotals'        => ( is => 'rw' );
+has 'timeout'          => ( is => 'rw' );
+has 'normalize_scores' => ( is => 'rw' );
 
 use Carp;
 use Data::Dump qw( dump );
@@ -168,9 +171,17 @@ RESP: for my $resp (@$responses) {
             if ( $xml_feed->{category}->{sos}->{facets} ) {
                 my $facet_feed = $xml_feed->{category}->{sos}->{facets};
                 for my $name ( keys %$facet_feed ) {
-                    for my $facet ( @{ $facet_feed->{$name}->{$name} } ) {
-                        $facets{$name}->{ $facet->{term} } += $facet->{count};
+                    if ( ref $facet_feed->{$name}->{$name} eq 'ARRAY' ) {
+                        for my $facet ( @{ $facet_feed->{$name}->{$name} } ) {
+                            $facets{$name}->{ $facet->{term} }
+                                += $facet->{count};
+                        }
                     }
+                    elsif ( ref $facet_feed->{$name}->{$name} eq 'HASH' ) {
+                        my $facet = $facet_feed->{$name}->{$name};
+                        $facets{$name}->{ $facet->{term} } = $facet->{count};
+                    }
+
                 }
             }
 
