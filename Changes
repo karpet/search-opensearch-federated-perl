@@ -1,5 +1,8 @@
 Revision history for Search-OpenSearch-Federated
 
+0.007 xxx
+ - replace old init() method with defaults on 'has' definitions
+
 0.006 11 May 2014
  - switch to Moo in support of Search::Tools 1.000
 

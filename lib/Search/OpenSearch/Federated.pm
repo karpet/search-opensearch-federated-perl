@@ -1,16 +1,20 @@
 package Search::OpenSearch::Federated;
 use Moo;
 
-our $VERSION = '0.006';
+our $VERSION = '0.007';
 
-has 'debug'            => ( is => 'rw' );
-has 'fields'           => ( is => 'rw' );
+has 'debug' => ( is => 'rw' );
+has 'fields' => (
+    is      => 'rw',
+    default => sub { [qw( title id author link summary tags modified )] }
+);
 has 'urls'             => ( is => 'rw' );
 has 'total'            => ( is => 'rw' );
 has 'facets'           => ( is => 'rw' );
 has 'subtotals'        => ( is => 'rw' );
 has 'timeout'          => ( is => 'rw' );
 has 'normalize_scores' => ( is => 'rw' );
+has 'version'          => ( is => 'rw', default => sub {$VERSION} );
 
 use Carp;
 use Data::Dump qw( dump );
@@ -34,14 +38,6 @@ my $XMLer = Search::Tools::XML->new();
 
 my $XML_ESCAPER = Data::Transformer->new(
     normal => sub { local ($_) = shift; $$_ = $XMLer->escape($$_); } );
-
-sub init {
-    my $self = shift;
-    $self->SUPER::init(@_);
-    $self->{fields}  ||= [qw( title id author link summary tags modified )];
-    $self->{version} ||= $VERSION;
-    return $self;
-}
 
 sub search {
     my $self = shift;
@@ -302,11 +298,11 @@ an array reference. Supported I<args> keys are:
 If true, all result scores are run through the L<Normalize> module to (hopefully)
 help create parity amongst the result sets.
 
+=item version
+
+Defaults to $VERSION package var.
+
 =back
-
-=head2 init
-
-Internal initialization method. Overrides Search::Tools::Object->init.
 
 =head2 search
 
