@@ -1,6 +1,6 @@
 Revision history for Search-OpenSearch-Federated
 
-0.007 xxx
+0.007 23 July 2014
  - replace old init() method with defaults on 'has' definitions
 
 0.006 11 May 2014
